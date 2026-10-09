@@ -1,0 +1,1263 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>聚合商详 · 瑕疵报告先行 Demo</title>
+  <style>
+    :root {
+      --green: #111;
+      --green-dark: #111;
+      --green-soft: #f2f2f2;
+      --text: #111;
+      --sub: #666;
+      --muted: #999;
+      --line: #eee;
+      --bg: #f5f5f5;
+      --danger: #666;
+      --warn: #888;
+      --stamp: #444;
+      --phone-w: 390px;
+      --phone-h: 844px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    button { font: inherit; border: none; background: none; cursor: pointer; color: inherit; }
+    img { display: block; max-width: 100%; }
+
+    body {
+      min-height: 100vh;
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", sans-serif;
+      background: #e6e6e6;
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px 16px 48px;
+      gap: 16px;
+    }
+
+    .desk-note {
+      max-width: 420px;
+      text-align: center;
+      color: #555;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    .desk-note strong { color: var(--green-dark); font-weight: 600; }
+
+    .phone {
+      width: var(--phone-w);
+      height: var(--phone-h);
+      background: #fff;
+      border-radius: 36px;
+      box-shadow:
+        0 0 0 10px #1a1a1a,
+        0 0 0 12px #333,
+        0 30px 60px rgba(0,0,0,.28);
+      overflow: hidden;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .status {
+      height: 44px;
+      padding: 12px 22px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 14px;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+    .status-right { display: flex; gap: 5px; align-items: center; font-size: 12px; }
+
+    .nav {
+      height: 44px;
+      padding: 0 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+      border-bottom: 1px solid transparent;
+      background: #fff;
+      z-index: 5;
+    }
+    .nav-back {
+      width: 28px; height: 28px;
+      display: grid; place-items: center;
+      font-size: 22px; color: #222;
+      flex-shrink: 0;
+    }
+    .nav-spacer { flex: 1; }
+    .nav-acts { display: flex; gap: 2px; flex-shrink: 0; }
+    .nav-acts button {
+      width: 32px; height: 32px;
+      display: grid; place-items: center;
+      color: #333;
+    }
+    .nav-acts .ico { width: 20px; height: 20px; display: block; }
+
+    /* —— 同款小卡（原顶部，现替换成色 Tab） —— */
+    .goods-rail {
+      margin: 0 0 8px;
+      padding: 8px 14px 10px;
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      overflow-y: hidden;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      border-bottom: 1px solid var(--line);
+    }
+    .goods-rail::-webkit-scrollbar { display: none; }
+
+    .mini-card {
+      flex: 0 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 8px 4px 4px;
+      min-width: 128px;
+      border-radius: 8px;
+      border: 1.5px solid #eee;
+      background: #fff;
+      text-align: left;
+      position: relative;
+    }
+    .mini-card.is-on {
+      border-color: #111;
+    }
+    .mini-thumb {
+      width: 38px; height: 38px; border-radius: 6px;
+      background: #f3f3f3;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+    .mini-thumb img {
+      width: 100%; height: 100%; object-fit: cover;
+    }
+
+    .mini-no {
+      position: absolute;
+      top: 2px; left: 2px;
+      width: 14px; height: 14px;
+      border-radius: 3px 0 4px 0;
+      background: #111;
+      color: #fff;
+      font-size: 9px;
+      font-weight: 700;
+      display: grid; place-items: center;
+      z-index: 1;
+    }
+    .mini-card.is-on .mini-no { display: none; }
+
+    .mini-body { min-width: 0; }
+    .mini-grade {
+      font-size: 11px;
+      color: #333;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+    .mini-grade em {
+      font-style: normal;
+      font-weight: 700;
+      margin-left: 2px;
+    }
+    .mini-price {
+      margin-top: 2px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #111;
+      white-space: nowrap;
+    }
+    .mini-price::before { content: "¥"; font-size: 10px; margin-right: 1px; }
+    .mini-low {
+      position: absolute;
+      top: -7px; left: 50%;
+      transform: translateX(-50%);
+      font-size: 8px;
+      background: #111;
+      color: #fff;
+      padding: 1px 6px;
+      border-radius: 8px;
+      white-space: nowrap;
+    }
+
+    .scroll {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+      background: #fff;
+      padding-bottom: 8px;
+    }
+    .scroll::-webkit-scrollbar { display: none; }
+
+    /* —— 商品头 —— */
+    .hero {
+      display: flex;
+      gap: 10px;
+      padding: 12px 14px 8px;
+      align-items: flex-start;
+    }
+    .hero-pic {
+      width: 56px;
+      height: 56px;
+      border-radius: 8px;
+      background: #f3f3f3;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .hero-pic img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .hero-body { flex: 1; min-width: 0; }
+    .hero-title {
+      font-size: 15px; font-weight: 700; line-height: 1.35;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .hero-meta {
+      margin-top: 6px;
+      font-size: 12px; color: var(--sub);
+      display: flex; gap: 10px; flex-wrap: wrap;
+    }
+    .hero-meta em { font-style: normal; color: var(--green-dark); font-weight: 600; }
+
+    .tags {
+      display: flex; flex-wrap: wrap; gap: 6px;
+      padding: 4px 14px 10px;
+    }
+    .tag {
+      font-size: 11px; padding: 3px 7px; border-radius: 4px;
+      background: #f3f3f3; color: #333; font-weight: 500;
+    }
+    .tag.hot { background: #111; color: #fff; }
+    .tag.rank { background: #e8e8e8; color: #222; }
+
+    .attrs {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 0;
+      margin: 0 14px 12px;
+      padding: 10px 0;
+      border-radius: 8px;
+      background: #fafafa;
+      border: 1px solid #f0f0f0;
+    }
+    .attr {
+      text-align: center;
+      padding: 0 4px;
+      border-right: 1px solid #eee;
+    }
+    .attr:last-child { border-right: none; }
+    .attr b { display: block; font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .attr span { display: block; font-size: 10px; color: var(--muted); margin-top: 3px; }
+    .attr a { color: var(--green-dark); text-decoration: none; font-size: 12px; font-weight: 600; }
+
+    /* —— 已选规格条（参考图2：已选 … 切换） —— */
+    .spec-bar {
+      margin: 4px 14px 12px;
+      padding: 13px 14px;
+      border-radius: 8px;
+      background: #f4f4f4;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: calc(100% - 28px);
+      text-align: left;
+    }
+    .spec-bar:active { background: #ebebeb; }
+    .spec-k {
+      flex-shrink: 0;
+      font-size: 13px;
+      color: #999;
+    }
+    .spec-v {
+      flex: 1;
+      min-width: 0;
+      font-size: 14px;
+      font-weight: 600;
+      color: #111;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .spec-switch {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: 1px;
+      font-size: 13px;
+      color: #999;
+    }
+    .spec-chev { font-size: 16px; color: #b0b0b0; line-height: 1; }
+
+    /* —— 当前商品鉴别报告 —— */
+    .report-wrap {
+      padding: 4px 14px 24px;
+    }
+    .report-empty {
+      padding: 32px 12px;
+      text-align: center;
+      color: #999;
+      font-size: 13px;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .report-card {
+      border-radius: 12px;
+      padding: 14px 12px 10px;
+      background:
+        linear-gradient(#fff, #fff) padding-box,
+        repeating-linear-gradient(
+          -45deg,
+          #d4d4d4 0 6px,
+          #f0f0f0 6px 12px
+        ) border-box;
+      border: 2px solid transparent;
+      position: relative;
+      animation: fadeUp .28s ease;
+    }
+
+    .buy-head {
+      margin: 0 0 12px;
+      padding: 0 0 12px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    .buy-price-row {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+    }
+    .buy-price {
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+    .buy-price::before { content: "¥"; font-size: 14px; margin-right: 1px; font-weight: 700; }
+    .buy-low {
+      font-size: 12px;
+      color: #666;
+    }
+    .buy-meta {
+      margin-top: 6px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: #444;
+    }
+    .pill {
+      font-size: 10px;
+      padding: 2px 5px;
+      border-radius: 3px;
+      background: #f2f2f2;
+      color: #333;
+      font-weight: 500;
+    }
+    .flaw-sum {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      color: #333;
+    }
+    .flaw-sum i {
+      font-style: normal;
+      font-weight: 700;
+      color: #888;
+    }
+    .flaw-sum.is-ok i { color: #111; }
+    .svc-row {
+      margin-top: 8px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .svc {
+      font-size: 11px;
+      color: #555;
+      background: #f7f7f7;
+      border-radius: 4px;
+      padding: 3px 7px;
+    }
+
+    .report-top {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      margin-bottom: 10px;
+      padding-right: 72px;
+    }
+    .report-grade {
+      font-size: 28px; font-weight: 800; line-height: 1;
+      color: #111; letter-spacing: -0.5px;
+    }
+    .report-labels {
+      display: flex; flex-wrap: wrap; gap: 6px;
+      padding-top: 6px;
+    }
+    .report-labels span {
+      font-size: 12px; color: #444;
+      display: inline-flex; align-items: center; gap: 2px;
+    }
+    .report-labels .info {
+      width: 14px; height: 14px; border-radius: 50%;
+      border: 1px solid #bbb; color: #999;
+      font-size: 10px; display: inline-grid; place-items: center;
+    }
+
+    .inspect-hd { position: relative; }
+
+    .stamp {
+      position: absolute;
+      top: 8px; right: 10px;
+      width: 64px; height: 64px;
+      border-radius: 50%;
+      border: 2.5px solid var(--stamp);
+      color: var(--stamp);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      transform: rotate(-12deg);
+      opacity: .92;
+      background: rgba(255,255,255,.85);
+    }
+    .stamp strong { font-size: 12px; font-weight: 800; letter-spacing: 1px; }
+    .stamp small { font-size: 7px; margin-top: 2px; opacity: .85; letter-spacing: .5px; }
+    .stamp::before {
+      content: "";
+      position: absolute; inset: 3px;
+      border-radius: 50%;
+      border: 1px dashed var(--stamp);
+      opacity: .6;
+    }
+
+    .report-sec-title {
+      font-size: 13px; font-weight: 600;
+      margin: 4px 0 10px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .report-sec-title::before {
+      content: "";
+      width: 3px; height: 12px;
+      background: var(--stamp);
+      border-radius: 2px;
+    }
+
+    .photo-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 5px;
+    }
+    .photo {
+      aspect-ratio: 1;
+      border-radius: 6px;
+      background: #ececec;
+      overflow: hidden;
+      position: relative;
+    }
+    .photo::after {
+      content: attr(data-label);
+      position: absolute;
+      left: 0; right: 0; bottom: 0;
+      font-size: 8px; color: #fff;
+      background: rgba(0,0,0,.35);
+      text-align: center;
+      padding: 2px 0;
+      line-height: 1.2;
+    }
+
+    /* 用不同色块模拟查验图角度 */
+    .photo[data-tone="1"] { background: linear-gradient(145deg,#ececec,#c8c8c8); }
+    .photo[data-tone="2"] { background: linear-gradient(145deg,#e2e2e2,#bdbdbd); }
+    .photo[data-tone="3"] { background: linear-gradient(145deg,#d6d6d6,#adadad); }
+    .photo[data-tone="4"] { background: linear-gradient(145deg,#cfcfcf,#9e9e9e); }
+    .photo[data-tone="5"] { background: linear-gradient(160deg,#e8e8e8,#b4b4b4); }
+    .photo[data-tone="6"] { background: linear-gradient(160deg,#dedede,#a8a8a8); }
+    .photo[data-tone="7"] { background: linear-gradient(180deg,#f2f2f2,#c2c2c2); }
+    .photo[data-tone="8"] { background: linear-gradient(180deg,#e6e6e6,#b0b0b0); }
+    .photo[data-tone="9"] { background: linear-gradient(145deg,#f5f5f5,#c8c8c8); }
+    .photo[data-tone="10"] { background: linear-gradient(145deg,#ebebeb,#bcbcbc); }
+
+    .photo-mark {
+      position: absolute;
+      top: 4px; left: 4px;
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      background: #111;
+      color: #fff; font-size: 9px; font-weight: 700;
+      display: grid; place-items: center;
+      z-index: 1;
+    }
+
+    .flaw-detail-list {
+      margin-top: 10px;
+      padding: 8px 10px;
+      background: #fafafa;
+      border-radius: 8px;
+      display: flex; flex-direction: column; gap: 6px;
+    }
+    .flaw-detail-item {
+      font-size: 12px; color: #444;
+      display: flex; gap: 6px; line-height: 1.4;
+    }
+    .flaw-detail-item .dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--warn); margin-top: 5px; flex-shrink: 0;
+    }
+    .flaw-detail-item.ok .dot { background: var(--green); }
+
+    .report-id {
+      margin-top: 8px;
+      text-align: right;
+      font-size: 10px;
+      color: var(--stamp);
+    }
+
+    /* —— 底部栏 —— */
+    .bottom {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px 20px;
+      border-top: 1px solid #f0f0f0;
+      background: #fff;
+    }
+    .bottom-ico {
+      width: 44px;
+      display: flex; flex-direction: column; align-items: center;
+      gap: 2px; font-size: 10px; color: #666;
+    }
+    .bottom-ico .ico { width: 20px; height: 20px; display: block; }
+    .btn-bargain {
+      flex: 1;
+      height: 42px;
+      border-radius: 22px;
+      border: 1.5px solid var(--green);
+      color: var(--green-dark);
+      font-weight: 600; font-size: 15px;
+    }
+    .btn-buy {
+      flex: 1.15;
+      height: 42px;
+      border-radius: 22px;
+      background: #111;
+      color: #fff;
+      font-weight: 700; font-size: 15px;
+      box-shadow: 0 4px 12px rgba(0,0,0,.18);
+    }
+    .btn-buy:disabled {
+      opacity: .45;
+      box-shadow: none;
+    }
+
+    /* —— 规格浮层 —— */
+    .mask {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,.45);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .25s;
+      z-index: 20;
+    }
+    .mask.is-on { opacity: 1; pointer-events: auto; }
+
+    .sheet {
+      position: absolute;
+      left: 0; right: 0; bottom: 0;
+      background: #fff;
+      border-radius: 16px 16px 0 0;
+      z-index: 21;
+      transform: translateY(105%);
+      transition: transform .3s cubic-bezier(.2,.8,.2,1);
+      max-height: 78%;
+      display: flex;
+      flex-direction: column;
+      padding-bottom: 16px;
+    }
+    .sheet.is-on { transform: translateY(0); }
+
+    .sheet-hd {
+      padding: 14px 16px 10px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      border-bottom: 1px solid #f5f5f5;
+    }
+    .sheet-pic {
+      width: 72px; height: 72px; border-radius: 8px;
+      background: #f3f3f3;
+      flex-shrink: 0;
+      margin-top: -28px;
+      border: 2px solid #fff;
+      box-shadow: 0 2px 8px rgba(0,0,0,.08);
+      overflow: hidden;
+    }
+    .sheet-pic img { width: 100%; height: 100%; object-fit: cover; }
+    .sheet-hd-main { flex: 1; padding-top: 4px; }
+    .sheet-price { font-size: 22px; font-weight: 700; color: #111; }
+    .sheet-price::before { content: "¥"; font-size: 14px; }
+    .sheet-sel { margin-top: 4px; font-size: 12px; color: var(--sub); }
+    .sheet-close {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: #f5f5f5; color: #666;
+      display: grid; place-items: center; font-size: 16px;
+    }
+
+    .sheet-body {
+      padding: 12px 16px 8px;
+      overflow-y: auto;
+      flex: 1;
+    }
+    .sheet-label {
+      font-size: 13px; font-weight: 600;
+      margin: 8px 0 10px;
+    }
+    .chip-row {
+      display: flex; flex-wrap: wrap; gap: 8px;
+      margin-bottom: 14px;
+    }
+    .chip {
+      min-width: 56px;
+      height: 36px;
+      padding: 0 14px;
+      border-radius: 6px;
+      border: 1px solid #e5e5e5;
+      background: #fafafa;
+      font-size: 13px;
+      color: #333;
+      display: grid; place-items: center;
+    }
+    .chip.is-on {
+      border-color: var(--green);
+      background: var(--green-soft);
+      color: var(--green-dark);
+      font-weight: 600;
+    }
+    .chip.is-disabled {
+      color: #ccc;
+      background: #f7f7f7;
+      pointer-events: none;
+    }
+    .chip .subp {
+      display: block;
+      font-size: 10px;
+      font-weight: 400;
+      color: var(--muted);
+      margin-top: -2px;
+    }
+    .chip.is-on .subp { color: var(--green-dark); opacity: .8; }
+
+    .size-measure {
+      font-size: 11px; color: var(--muted);
+      margin: -6px 0 12px;
+      line-height: 1.5;
+    }
+
+    .sheet-foot {
+      padding: 8px 16px 8px;
+    }
+    .sheet-confirm {
+      width: 100%;
+      height: 44px;
+      border-radius: 22px;
+      background: #111;
+      color: #fff;
+      font-weight: 700; font-size: 15px;
+    }
+
+    .toast {
+      position: absolute;
+      left: 50%; top: 48%;
+      transform: translate(-50%, -50%) scale(.95);
+      background: rgba(0,0,0,.78);
+      color: #fff;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .2s, transform .2s;
+      z-index: 40;
+      white-space: nowrap;
+    }
+    .toast.is-on {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+
+    @media (max-width: 440px) {
+      body { padding: 0; background: #fff; }
+      .desk-note { display: none; }
+      .phone {
+        width: 100vw; height: 100vh; height: 100dvh;
+        border-radius: 0; box-shadow: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <p class="desk-note">
+    <strong>交互要点：</strong>点规格条切尺码；点小卡切商品，下方直接展示该件鉴别报告
+  </p>
+
+  <div class="phone" id="phone">
+    <div class="status">
+      <span>9:41</span>
+      <div class="status-right">
+        <span>●●●</span>
+        <span>Wi‑Fi</span>
+        <span>🔋</span>
+      </div>
+    </div>
+
+    <header class="nav">
+      <button class="nav-back" type="button" aria-label="返回">‹</button>
+      <div class="nav-spacer"></div>
+      <div class="nav-acts">
+        <button type="button" aria-label="搜索">
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="11" cy="11" r="6.5"/>
+            <path d="M16 16l4.5 4.5"/>
+          </svg>
+        </button>
+        <button type="button" aria-label="出售">
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 16V5"/>
+            <path d="M7.5 9.5L12 5l4.5 4.5"/>
+            <path d="M5 19h14"/>
+          </svg>
+        </button>
+        <button type="button" aria-label="分享">
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="6" cy="12" r="2.2"/>
+            <circle cx="16" cy="7" r="2.2"/>
+            <circle cx="16" cy="17" r="2.2"/>
+            <path d="M8 11.2l6-3.2M8 12.8l6 3.2"/>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <div class="scroll" id="scroll">
+      <div class="hero">
+        <div class="hero-pic"><img src="assets/jacket.svg" alt=""></div>
+        <div class="hero-body">
+          <h1 class="hero-title">中国李宁 重燃系列 星星印花宽松水洗牛仔外套</h1>
+          <div class="hero-meta">
+            <span>20商家竞价</span>
+            <span>在售均价 <em>¥1399</em></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tags">
+        <span class="tag hot">HOT 近7天38人买过</span>
+        <span class="tag">48人想要</span>
+        <span class="tag rank">潮流榜 TOP 3</span>
+      </div>
+
+      <div class="attrs">
+        <div class="attr"><b>¥599</b><span>发售价</span></div>
+        <div class="attr"><b>李宁</b><span>品牌</span></div>
+        <div class="attr"><a href="javascript:;">尺码表</a><span>查看</span></div>
+        <div class="attr"><b>01-03</b><span>发售日</span></div>
+        <div class="attr"><b>239899</b><span>货号</span></div>
+      </div>
+
+      <!-- 规格条：替代原平铺，样式参考「已选 … 切换」 -->
+      <button class="spec-bar" id="specBar" type="button" aria-label="切换规格">
+        <span class="spec-k">已选</span>
+        <span class="spec-v" id="specBarSel">SS级 水洗蓝 星星印花 S码</span>
+        <span class="spec-switch">切换<span class="spec-chev">›</span></span>
+      </button>
+
+      <div class="goods-rail" id="goodsRail"></div>
+      <div class="report-wrap" id="reportPanel"></div>
+    </div>
+
+    <div class="bottom">
+      <button class="bottom-ico" type="button">
+        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M6 9a6 6 0 0 1 12 0c0 7 3 7 3 9H3c0-2 3-2 3-9"/>
+          <path d="M10 21a2 2 0 0 0 4 0"/>
+        </svg>
+        降价提醒
+      </button>
+      <button class="bottom-ico" type="button" id="wantBtn">
+        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 20s-7-4.4-7-9a4 4 0 0 1 7-2 4 4 0 0 1 7 2c0 4.6-7 9-7 9z"/>
+        </svg>
+        想要
+      </button>
+      <button class="btn-bargain" type="button" id="bargainBtn">还价</button>
+      <button class="btn-buy" type="button" id="buyBtn">立即购买</button>
+    </div>
+
+    <div class="mask" id="mask"></div>
+
+    <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="选择规格">
+      <div class="sheet-hd">
+        <div class="sheet-pic"><img src="assets/jacket.svg" alt=""></div>
+        <div class="sheet-hd-main">
+          <div class="sheet-price" id="sheetPrice">1259</div>
+          <div class="sheet-sel" id="sheetSel">已选：SS级 水洗蓝 星星印花 S码</div>
+        </div>
+        <button class="sheet-close" id="sheetClose" type="button" aria-label="关闭">×</button>
+      </div>
+      <div class="sheet-body">
+        <p class="sheet-label">成色</p>
+        <div class="chip-row" id="gradeChips"></div>
+        <p class="sheet-label">尺码</p>
+        <div class="chip-row" id="sizeChips"></div>
+        <p class="size-measure" id="sizeMeasure"></p>
+      </div>
+      <div class="sheet-foot">
+        <button class="sheet-confirm" id="sheetConfirm" type="button">确定</button>
+      </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+  </div>
+
+  <script>
+    const SIZES = [
+      { id: "S", measure: "胸围 114cm · 衣长 66cm · 肩宽 46.6cm · 袖长 60cm" },
+      { id: "M", measure: "胸围 118cm · 衣长 68cm · 肩宽 48cm · 袖长 61cm" },
+      { id: "L", measure: "胸围 122cm · 衣长 70cm · 肩宽 49.5cm · 袖长 62cm" },
+      { id: "XL", measure: "胸围 126cm · 衣长 72cm · 肩宽 51cm · 袖长 63cm" },
+      { id: "2XL", measure: "胸围 130cm · 衣长 74cm · 肩宽 52.5cm · 袖长 64cm" },
+      { id: "3XL", measure: "胸围 134cm · 衣长 76cm · 肩宽 54cm · 袖长 65cm" },
+    ];
+
+    const GRADES = [
+      { id: "SS", label: "SS级", tip: "未使用 / 极轻微瑕疵" },
+      { id: "S", label: "S级", tip: "轻微使用痕迹" },
+      { id: "A", label: "A级", tip: "明显使用痕迹" },
+      { id: "B", label: "B级", tip: "重度使用痕迹" },
+    ];
+
+    /** 同款商品 mock：按尺码+成色过滤 */
+    const GOODS = [
+      {
+        id: "g1", size: "S", grade: "SS", price: 1259, unused: true,
+        tags: ["平台已验", "SS级", "未使用", "次日达"],
+        mini: [
+          { ok: true, text: "外观完好" },
+          { ok: true, text: "功能完好" },
+          { ok: true, text: "配件齐全" },
+        ],
+        flaws: [
+          { ok: true, text: "外观：整体完好，无明显瑕疵" },
+          { ok: true, text: "功能：拉链、扣件均正常" },
+          { ok: true, text: "配件：吊牌、防尘袋齐全" },
+        ],
+        flawLevel: "极轻微瑕疵",
+        reportId: "953254480701",
+        marked: [],
+      },
+      {
+        id: "g2", size: "S", grade: "SS", price: 1352, unused: true,
+        tags: ["平台已验", "SS级", "未使用", "次日达"],
+        mini: [
+          { ok: false, text: "外观：左袖口轻微氧化泛黄" },
+          { ok: true, text: "功能完好" },
+          { ok: true, text: "配件齐全" },
+        ],
+        flaws: [
+          { ok: false, text: "外观：左袖口内侧轻微氧化泛黄（约 0.5cm）" },
+          { ok: true, text: "功能：拉链、扣件均正常" },
+          { ok: true, text: "配件：吊牌齐全，无原装包装盒" },
+        ],
+        flawLevel: "极轻微瑕疵",
+        reportId: "953254480708",
+        marked: [2, 3],
+      },
+      {
+        id: "g3", size: "S", grade: "SS", price: 1499, unused: true,
+        tags: ["平台已验", "SS级", "未使用", "次日达"],
+        mini: [
+          { ok: false, text: "外观：前幅轻微污渍" },
+          { ok: false, text: "外观：左袖口轻微氧化泛黄" },
+          { ok: true, text: "配件齐全" },
+        ],
+        flaws: [
+          { ok: false, text: "外观：前幅右下角轻微污渍（约 0.3cm）" },
+          { ok: false, text: "外观：左袖口内侧轻微氧化泛黄" },
+          { ok: true, text: "功能完好 · 配件齐全" },
+        ],
+        flawLevel: "极轻微瑕疵",
+        reportId: "953254480715",
+        marked: [1, 4],
+      },
+      {
+        id: "g3b", size: "S", grade: "S", price: 1099, unused: false,
+        tags: ["平台已验", "S级", "轻微使用", "次日达"],
+        mini: [
+          { ok: false, text: "外观：领口轻微磨损" },
+          { ok: true, text: "功能完好" },
+        ],
+        flaws: [
+          { ok: false, text: "外观：领口内侧轻微磨损发白" },
+          { ok: true, text: "功能完好 · 配件齐全" },
+        ],
+        flawLevel: "轻微瑕疵",
+        reportId: "953254480716",
+        marked: [0, 5],
+      },
+      {
+        id: "g4", size: "M", grade: "SS", price: 1299, unused: true,
+        tags: ["平台已验", "SS级", "未使用", "次日达"],
+        mini: [
+          { ok: true, text: "外观完好" },
+          { ok: true, text: "功能完好" },
+          { ok: true, text: "配件齐全" },
+        ],
+        flaws: [
+          { ok: true, text: "外观完好，无可见瑕疵" },
+          { ok: true, text: "功能完好 · 配件齐全" },
+        ],
+        flawLevel: "极轻微瑕疵",
+        reportId: "953254480720",
+        marked: [],
+      },
+      {
+        id: "g5", size: "M", grade: "S", price: 1199, unused: false,
+        tags: ["平台已验", "S级", "轻微使用", "次日达"],
+        mini: [
+          { ok: false, text: "外观：领口轻微磨损" },
+          { ok: true, text: "功能完好" },
+        ],
+        flaws: [
+          { ok: false, text: "外观：领口内侧轻微磨损发白" },
+          { ok: false, text: "外观：袖口有轻微起毛" },
+          { ok: true, text: "功能完好" },
+        ],
+        flawLevel: "轻微瑕疵",
+        reportId: "953254480730",
+        marked: [0, 5],
+      },
+      {
+        id: "g6", size: "L", grade: "A", price: 1199, unused: false,
+        tags: ["平台已验", "A级", "明显使用"],
+        mini: [
+          { ok: false, text: "外观：多处使用痕迹" },
+          { ok: true, text: "功能完好" },
+        ],
+        flaws: [
+          { ok: false, text: "外观：袖肘处有明显磨损" },
+          { ok: false, text: "外观：口袋边角起毛" },
+          { ok: true, text: "拉链功能正常" },
+        ],
+        flawLevel: "明显瑕疵",
+        reportId: "953254480740",
+        marked: [1, 2, 6],
+      },
+      {
+        id: "g7", size: "XL", grade: "B", price: 499, unused: false,
+        tags: ["平台已验", "B级", "重度使用"],
+        mini: [
+          { ok: false, text: "外观：明显磨损变色" },
+          { ok: false, text: "配件：缺吊牌" },
+        ],
+        flaws: [
+          { ok: false, text: "外观：大面积水洗磨损与变色" },
+          { ok: false, text: "外观：背面有修补痕迹" },
+          { ok: false, text: "配件：缺原装吊牌" },
+        ],
+        flawLevel: "明显瑕疵",
+        reportId: "953254480750",
+        marked: [0, 3, 7, 8],
+      },
+    ];
+
+    const SKU = { color: "水洗蓝", extra: "星星印花" };
+
+    function specText(size, grade) {
+      return `${grade}级 ${SKU.color} ${SKU.extra} ${size}码`;
+    }
+
+    const PHOTO_LABELS = [
+      "正面", "背面", "左袖", "右袖", "领口",
+      "袖口", "内标", "细节", "吊牌", "包装",
+    ];
+
+    const state = {
+      size: "S",
+      grade: "SS",
+      selectedId: "g1",
+      draftSize: "S",
+      draftGrade: "SS",
+    };
+
+    const $ = (sel, root = document) => root.querySelector(sel);
+    const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
+
+    function filteredGoods() {
+      return GOODS
+        .filter(g => g.size === state.size && g.grade === state.grade)
+        .sort((a, b) => a.price - b.price);
+    }
+
+    function selectedGoods() {
+      return GOODS.find(g => g.id === state.selectedId) || filteredGoods()[0];
+    }
+
+    function toast(msg) {
+      const el = $("#toast");
+      el.textContent = msg;
+      el.classList.add("is-on");
+      clearTimeout(toast._t);
+      toast._t = setTimeout(() => el.classList.remove("is-on"), 1400);
+    }
+
+    function syncSpecBar() {
+      const g = selectedGoods();
+      if (!g) return;
+      $("#specBarSel").textContent = specText(g.size, g.grade);
+      $("#sheetPrice").textContent = String(g.price);
+      $("#sheetSel").textContent = `已选：${specText(g.size, g.grade)}`;
+    }
+
+    function renderPhotoGrid(marked = []) {
+      return PHOTO_LABELS.map((label, i) => {
+        const mark = marked.includes(i) ? `<span class="photo-mark">!</span>` : "";
+        return `<div class="photo" data-tone="${i + 1}" data-label="${label}">${mark}</div>`;
+      }).join("");
+    }
+
+    function railGoods() {
+      return filteredGoods();
+    }
+
+    function renderRail() {
+      const rail = $("#goodsRail");
+      const list = railGoods();
+      if (!list.length) {
+        rail.innerHTML = "";
+        return;
+      }
+      let n = 0;
+      rail.innerHTML = list.map((g, i) => {
+        const on = g.id === state.selectedId;
+        if (!on) n += 1;
+        return `
+          <button class="mini-card ${on ? "is-on" : ""}" data-id="${g.id}" data-tone="${i % 6 + 1}" type="button">
+            ${isGradeLow(g) ? `<span class="mini-low">同成色最低</span>` : ""}
+            ${on ? "" : `<span class="mini-no">${n}</span>`}
+            <span class="mini-thumb"><img src="assets/jacket.svg" alt="平面图"></span>
+            <span class="mini-body">
+              <span class="mini-grade">${g.grade}级</span>
+              <span class="mini-price">${g.price}</span>
+            </span>
+          </button>
+        `;
+      }).join("");
+
+      $$(".mini-card", rail).forEach(btn => {
+        btn.addEventListener("click", () => selectGoods(btn.dataset.id));
+      });
+
+      const onCard = $(".mini-card.is-on", rail);
+      onCard?.scrollIntoView({ inline: "center", block: "nearest", behavior: "smooth" });
+    }
+
+    function selectGoods(id) {
+      const g = GOODS.find(x => x.id === id);
+      if (!g) return;
+      state.selectedId = id;
+      state.size = g.size;
+      state.grade = g.grade;
+      renderPage();
+    }
+
+    function flawSummary(g) {
+      const issues = (g.mini || []).filter(x => !x.ok).map(x => x.text.replace(/^外观：/, ""));
+      if (!issues.length) return { ok: true, text: "外观、功能、配件完好" };
+      return { ok: false, text: issues.join("；") };
+    }
+
+    function isGradeLow(g) {
+      const same = GOODS
+        .filter(x => x.size === g.size && x.grade === g.grade)
+        .sort((a, b) => a.price - b.price || a.id.localeCompare(b.id));
+      return same[0]?.id === g.id;
+    }
+
+    function renderReport() {
+      const wrap = $("#reportPanel");
+      const list = filteredGoods();
+      if (!list.length) {
+        wrap.innerHTML = `<p class="report-empty">该规格暂无在售，请换尺码或成色</p>`;
+        return;
+      }
+      if (!list.some(g => g.id === state.selectedId)) {
+        state.selectedId = list[0].id;
+      }
+      const g = selectedGoods();
+      if (!g) {
+        wrap.innerHTML = "";
+        return;
+      }
+      const details = g.flaws.map(f =>
+        `<div class="flaw-detail-item ${f.ok ? "ok" : ""}"><span class="dot"></span><span>${f.text}</span></div>`
+      ).join("");
+      const sum = flawSummary(g);
+      const services = ["72小时无理由退货", "极速退款", "晚到必赔"];
+      if (g.tags?.includes("次日达")) services.unshift("次日达");
+      wrap.innerHTML = `
+        <div class="report-card">
+          <div class="buy-head">
+            <div class="buy-price-row">
+              <span class="buy-price">${g.price}</span>
+              ${isGradeLow(g) ? `<span class="buy-low">同成色最低</span>` : ""}
+            </div>
+            <div class="buy-meta">
+              <span class="pill">平台已验</span>
+              <span class="pill">${g.grade}级</span>
+              <span class="flaw-sum ${sum.ok ? "is-ok" : ""}"><i>${sum.ok ? "✓" : "!"}</i>${sum.text}</span>
+            </div>
+            <div class="svc-row">
+              ${services.map(s => `<span class="svc">${s}</span>`).join("")}
+            </div>
+          </div>
+          <div class="inspect-hd">
+          <div class="stamp"><strong>鉴别通过</strong><small>NINETY-FIVE</small></div>
+          <div class="report-top">
+            <div class="report-grade">${g.grade}</div>
+            <div class="report-labels">
+              <span>${g.unused ? "未使用" : "已使用"}</span>
+              <span>${g.flawLevel} <i class="info">i</i></span>
+            </div>
+          </div>
+          </div>
+          <div class="report-sec-title">实物查验</div>
+          <div class="photo-grid">${renderPhotoGrid(g.marked)}</div>
+          <div class="flaw-detail-list">${details}</div>
+          <div class="report-id">报告编号: ${g.reportId}</div>
+        </div>
+      `;
+    }
+
+    function renderPage() {
+      if (!filteredGoods().some(g => g.id === state.selectedId)) {
+        state.selectedId = filteredGoods()[0]?.id || null;
+      }
+      syncSpecBar();
+      renderRail();
+      renderReport();
+    }
+
+    function renderSheetChips() {
+      $("#sizeChips").innerHTML = SIZES.map(s =>
+        `<button class="chip ${state.draftSize === s.id ? "is-on" : ""}" data-size="${s.id}" type="button">${s.id}</button>`
+      ).join("");
+
+      const measure = SIZES.find(s => s.id === state.draftSize)?.measure || "";
+      $("#sizeMeasure").textContent = measure;
+
+      $("#gradeChips").innerHTML = GRADES.map(g => {
+        const lowest = GOODS.filter(x => x.size === state.draftSize && x.grade === g.id)
+          .reduce((min, x) => Math.min(min, x.price), Infinity);
+        const has = Number.isFinite(lowest);
+        return `<button class="chip ${state.draftGrade === g.id ? "is-on" : ""} ${has ? "" : "is-disabled"}" data-grade="${g.id}" type="button">
+          ${g.label}${has ? `<span class="subp">¥${lowest}起</span>` : `<span class="subp">暂无</span>`}
+        </button>`;
+      }).join("");
+
+      $$("#sizeChips .chip").forEach(btn => {
+        btn.addEventListener("click", () => {
+          state.draftSize = btn.dataset.size;
+          const stillHas = GOODS.some(g => g.size === state.draftSize && g.grade === state.draftGrade);
+          if (!stillHas) {
+            const first = GRADES.find(g => GOODS.some(x => x.size === state.draftSize && x.grade === g.id));
+            if (first) state.draftGrade = first.id;
+          }
+          renderSheetChips();
+          updateSheetPreview();
+        });
+      });
+
+      $$("#gradeChips .chip:not(.is-disabled)").forEach(btn => {
+        btn.addEventListener("click", () => {
+          state.draftGrade = btn.dataset.grade;
+          renderSheetChips();
+          updateSheetPreview();
+        });
+      });
+    }
+
+    function updateSheetPreview() {
+      const pool = GOODS.filter(g => g.size === state.draftSize && g.grade === state.draftGrade);
+      const g = pool[0];
+      if (g) {
+        $("#sheetPrice").textContent = String(g.price);
+        $("#sheetSel").textContent = `已选：${specText(state.draftSize, state.draftGrade)}`;
+      } else {
+        $("#sheetPrice").textContent = "—";
+        $("#sheetSel").textContent = `已选：${specText(state.draftSize, state.draftGrade)}（暂无货）`;
+      }
+    }
+
+    function openSheet() {
+      state.draftSize = state.size;
+      state.draftGrade = state.grade;
+      renderSheetChips();
+      updateSheetPreview();
+      $("#mask").classList.add("is-on");
+      $("#sheet").classList.add("is-on");
+    }
+
+    function closeSheet() {
+      $("#mask").classList.remove("is-on");
+      $("#sheet").classList.remove("is-on");
+    }
+
+    function applySheet() {
+      const pool = GOODS.filter(g => g.size === state.draftSize && g.grade === state.draftGrade);
+      if (!pool.length) {
+        toast("该规格暂无在售");
+        return;
+      }
+      state.size = state.draftSize;
+      state.grade = state.draftGrade;
+      state.selectedId = pool[0].id;
+
+      renderPage();
+      closeSheet();
+      toast(`已切换 ${state.size}码 · ${state.grade}级`);
+    }
+
+    $("#specBar").addEventListener("click", openSheet);
+    $("#mask").addEventListener("click", closeSheet);
+    $("#sheetClose").addEventListener("click", closeSheet);
+    $("#sheetConfirm").addEventListener("click", applySheet);
+
+    $("#wantBtn").addEventListener("click", () => {
+      const g = selectedGoods();
+      toast(g ? `已收藏 · 可对照瑕疵报告再还价` : "请先选择商品");
+    });
+    $("#bargainBtn").addEventListener("click", () => {
+      const g = selectedGoods();
+      toast(g ? `对 ¥${g.price} 发起还价` : "请先选择商品");
+    });
+    $("#buyBtn").addEventListener("click", () => {
+      const g = selectedGoods();
+      toast(g ? `去结算 ¥${g.price}` : "请先选择商品");
+    });
+
+    renderPage();
+  </script>
+</body>
+</html>
